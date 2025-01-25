@@ -8,7 +8,7 @@ import {
     ScrollView,
     FlatList,
 } from 'react-native';
-// import PDFDocument from 'react-native-pdf';
+import PDFDocument from 'react-native-pdf';
 
 interface Message {
     id: string;
@@ -45,30 +45,27 @@ const ChatbotScreen: React.FC = () => {
         setUserQuestion('');
 
         try {
-            const response = await fetch('https://catfact.ninja/fact', {
-                method: 'GET',
+            const response = await fetch('https://60fe-2405-201-c011-e155-3537-e6f-e681-86bc.ngrok-free.app/process_query', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({
+                    query: userQuestion,
+                    user: 'user'
+                }),
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
 
             const data = await response.json();
             console.log(data);
 
-            const assistantMessage: Message = { id: Date.now().toString(), role: 'assistant', content: data.fact };
-            setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-
-            // if (data.status_code === 200) {
-            //     const assistantMessage: Message = { id: Date.now().toString(), role: 'assistant', content: data.response };
-            //     setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-            // } else {
-            //     const errorMessage: Message = { id: Date.now().toString(), role: 'assistant', content: 'Error: Unable to get response from the server.' };
-            //     setMessages((prevMessages) => [...prevMessages, errorMessage]);
-            // }
+            if (data.status_code === 200) {
+                const assistantMessage: Message = { id: Date.now().toString(), role: 'assistant', content: data.response };
+                setMessages((prevMessages) => [...prevMessages, assistantMessage]);
+            } else {
+                const errorMessage: Message = { id: Date.now().toString(), role: 'assistant', content: 'Error: Unable to get response from the server.' };
+                setMessages((prevMessages) => [...prevMessages, errorMessage]);
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
             const errorMessage: Message = { id: Date.now().toString(), role: 'assistant', content: 'Error: Unable to get response from the server..' };
